@@ -11,7 +11,7 @@
 
 float *A, *B, *C,**KL;
 
-int size[K];
+int tempSize[K],size[K];
 
 void alloc() {
     A = (float *) malloc(N*2*sizeof(float));
@@ -38,6 +38,7 @@ void inicializa() {
     for(int i = 0; i < K; i++) {
         B[i*2]  = A[i*2];
         B[i*2+1]= A[i*2+1];
+        size[i] = 0;
     }
 }
 
@@ -47,7 +48,7 @@ float distance (float *vec, float *cl){
 }
 
 void addToCluster(int numCluster, float x, float y){
-    int n = size[numCluster]++;
+    int n = tempSize[numCluster]++;
     KL[numCluster][n*2]= x;
     KL[numCluster][n*2+1]= y; 
     C[numCluster*2] += x; 
@@ -57,9 +58,9 @@ void addToCluster(int numCluster, float x, float y){
 
 
 void k_means(){
-    for (int i =0; i < 39;i++){
-        printf("-> %d\n",i);
-        for (int i = 0; i< N;i++){
+    int changed = 1, iterations = 0;
+    while (changed){
+        for (int i = 0; i < N ;i++){
             float lowest = distance(&A[i*2],B);
             int index_low = 0;
             for (int k = 1; k < K;k++){
@@ -73,16 +74,23 @@ void k_means(){
             //printf("%d %f | %f - %f \n",i,lowest,A[2*i],A[2*i+1]);
             //for (int k=0; k < K; k++){}
         }
+        changed = 0;
         for (int u = 0; u < K;u++){
-            B[u*2] =   C[u*2]  /size[u];
-            B[u*2+1] = C[u*2+1]/size[u];
+            B[u*2] =   C[u*2]  /tempSize[u];
+            B[u*2+1] = C[u*2+1]/tempSize[u];
             C[u*2] = 0;
             C[u*2+1] = 0;
+            if (tempSize[u] != size[u]) {
+                //printf("Changed %d %d\n",size[u],tempSize[u]);
+                size[u] = tempSize[u];
+                changed = 1;
+            }
+            tempSize[u] = 0;
         }
-    }
-    for (int i = 0; i < K;i++){
-        printf("%f | %f \n",B[i*2],B[i*2+1]);
-
+        for (int j = 0; j < K;j++){
+            printf("%d | %f | %f -> %d\n",iterations,B[j*2],B[j*2+1],size[j]);
+        }
+        iterations++;
     }
 }
 
