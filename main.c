@@ -6,22 +6,23 @@
 #define N 10000000
 //#define N 100
 
-
+#define X(i) (i*2)
+#define Y(i) (i*2+1)
 #define K 4
 
-float *A, *B, *C,**KL;
+float *vector, *centroid, *sum,**cluster;
 
 int tempSize[K],size[K];
 
 void alloc() {
-    A = (float *) malloc(N*2*sizeof(float));
-    B = (float *) malloc(K*2*sizeof(float));
-    C = (float *) malloc(K*2*sizeof(float));
+    vector = (float *) malloc(N*2*sizeof(float));
+    centroid = (float *) malloc(K*2*sizeof(float));
+    sum = (float *) malloc(K*2*sizeof(float));
 
 
-    KL = (float **)malloc(K * sizeof(float *));
+    cluster = (float **)malloc(K * sizeof(float *));
     for (int i = 0; i < K;i++){
-        KL[i] = (float *) malloc(N*2*sizeof(float));
+        cluster[i] = (float *) malloc(N*2*sizeof(float));
     }
 }
 
@@ -31,13 +32,13 @@ void inicializa() {
 
     // initialize vector with N values (x,y)
     for(int i = 0; i < N; i++) {
-        A[i*2]   = (float) rand() / RAND_MAX;
-        A[i*2+1] = (float) rand() / RAND_MAX;
+        vector[X(i)] = (float) rand() / RAND_MAX;
+        vector[Y(i)] = (float) rand() / RAND_MAX;
     }
     // initialize cluster values
     for(int i = 0; i < K; i++) {
-        B[i*2]  = A[i*2];
-        B[i*2+1]= A[i*2+1];
+        centroid[X(i)]  = vector[X(i)];
+        centroid[Y(i)]= vector[Y(i)];
         size[i] = 0;
     }
 }
@@ -49,49 +50,51 @@ float distance (float *vec, float *cl){
 
 void addToCluster(int numCluster, float x, float y){
     int n = tempSize[numCluster]++;
-    KL[numCluster][n*2]= x;
-    KL[numCluster][n*2+1]= y; 
-    C[numCluster*2] += x; 
-    C[numCluster*2+1] += y; 
+    cluster[numCluster][X(n)]= x;
+    cluster[numCluster][Y(n)]= y; 
+    sum[X(numCluster)] += x; 
+    sum[Y(numCluster)] += y; 
 }
 
+void showResult(int it){
 
+    printf("N = %d, K = %d\n",N,K);
+    for (int i = 0;i<K ;i++){
+        printf("Center: (%.3f,%.3f) : Size: %d\n",centroid[X(i)],centroid[Y(i)],size[i]);
+    }
+    printf("Iterations: %d\n",it);
+}
 
 void k_means(){
     int changed = 1, iterations = 0;
     while (changed){
         for (int i = 0; i < N ;i++){
-            float lowest = distance(&A[i*2],B);
+            float lowest = distance(&vector[X(i)],centroid);
             int index_low = 0;
             for (int k = 1; k < K;k++){
-                float dist = distance(&A[i*2],&B[k*2]);
+                float dist = distance(&vector[X(i)],&centroid[X(k)]);
                 if (dist < lowest){
                     lowest = dist;
                     index_low = k;
                 }
             }
-            addToCluster(index_low,A[i*2],A[i*2+1]);
-            //printf("%d %f | %f - %f \n",i,lowest,A[2*i],A[2*i+1]);
-            //for (int k=0; k < K; k++){}
+            addToCluster(index_low,vector[X(i)],vector[Y(i)]);
         }
         changed = 0;
         for (int u = 0; u < K;u++){
-            B[u*2] =   C[u*2]  /tempSize[u];
-            B[u*2+1] = C[u*2+1]/tempSize[u];
-            C[u*2] = 0;
-            C[u*2+1] = 0;
+            centroid[X(u)] = sum[X(u)]/tempSize[u];
+            centroid[Y(u)] = sum[Y(u)]/tempSize[u];
+            sum[X(u)] = 0;
+            sum[Y(u)] = 0;
             if (tempSize[u] != size[u]) {
-                //printf("Changed %d %d\n",size[u],tempSize[u]);
                 size[u] = tempSize[u];
                 changed = 1;
             }
             tempSize[u] = 0;
         }
-        for (int j = 0; j < K;j++){
-            printf("%d | %f | %f -> %d\n",iterations,B[j*2],B[j*2+1],size[j]);
-        }
-        iterations++;
+       iterations++;
     }
+    showResult(iterations - 1);
 }
 
 int main (){
