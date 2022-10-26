@@ -13,14 +13,14 @@
 float *vector, *centroid;
 int size[K] = {0}, *cluster;
 
-
+//Function to allocate memory espace
 void alloc() {
     vector =  (float *) malloc(N*2*sizeof(float));
     cluster = (int *)   malloc(N *sizeof(int));
     centroid =(float *) malloc(K*2*sizeof(float));
 }
 
-
+//Function to initialize the clusters and so the algorithm
 void inicializa() {
     srand(10);
     // initialize vector with N values (x,y)
@@ -36,12 +36,12 @@ void inicializa() {
     }
 }
 
-
+//Function to calculate the euclidean distance
 float distance1 (float x,float y, float *cl){
     return ((cl[0] - x) * (cl[0] - x)  + (cl[1] - y) * (cl[1] - y));
 }
 
-
+//Function to show the interactions after the execution time
 void showResult(int it){
     printf("N = %d, K = %d\n",N,K);
     for (int i = 0;i<K ;i++){
@@ -50,6 +50,7 @@ void showResult(int it){
     printf("Iterations: %d\n",it);
 }
 
+//Main Function of the program to run the k-means algorithm
 int k_means(){
     int changed = 1, iterations = 0;
     while (changed){
