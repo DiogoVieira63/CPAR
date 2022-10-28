@@ -38,7 +38,7 @@ void inicializa() {
 }
 
 //Function to calculate the euclidean distance
-float distance1 (float x,float y, float *cl){
+float distance (float x,float y, float *cl){
     return ((cl[0] - x) * (cl[0] - x)  + (cl[1] - y) * (cl[1] - y));
 }
 
@@ -59,10 +59,10 @@ int k_means(){
         int tempSize[K] = {0};
         float sum[K*2] = {0};
         for (int i = 0; i < N ;i++){ 
-            float lowest = distance1(vector[X(i)],vector[Y(i)],&centroid[X(0)]);
+            float lowest = distance(vector[X(i)],vector[Y(i)],&centroid[X(0)]);
             int index_low = 0;
             for (int k = 1; k < K;k++){
-                float dist = distance1(vector[X(i)],vector[Y(i)],&centroid[X(k)]);
+                float dist = distance(vector[X(i)],vector[Y(i)],&centroid[X(k)]);
                 if (dist < lowest){
                     lowest = dist;
                     index_low = k;
