@@ -10,12 +10,13 @@
 #define K 4
 
 
-float *vector, *centroid;
-int size[K] = {0}, *cluster;
+float vector[N*2]   __attribute__((aligned (32)));
+float  *centroid;//,*vector;
+int size[K] = {0},*cluster;
 
 //Function to allocate memory espace
 void alloc() {
-    vector =  (float *) malloc(N*2*sizeof(float));
+    //vector =  (float *) malloc(N*2*sizeof(float));
     cluster = (int *)   malloc(N *sizeof(int));
     centroid =(float *) malloc(K*2*sizeof(float));
 }
@@ -31,8 +32,8 @@ void inicializa() {
     }
     // initialize cluster values
     for(int i = 0; i < K; i++) {
-        centroid[X(i)]  = vector[X(i)];
-        centroid[Y(i)]= vector[Y(i)];
+        centroid[X(i)] = vector[X(i)];
+        centroid[Y(i)] = vector[Y(i)];
     }
 }
 
@@ -58,11 +59,10 @@ int k_means(){
         int tempSize[K] = {0};
         float sum[K*2] = {0};
         for (int i = 0; i < N ;i++){ 
-            float x  = vector[X(i)], y = vector[Y(i)];
-            float lowest = distance1(x,y,&centroid[X(0)]);
+            float lowest = distance1(vector[X(i)],vector[Y(i)],&centroid[X(0)]);
             int index_low = 0;
             for (int k = 1; k < K;k++){
-                float dist = distance1(x,y,&centroid[X(k)]);
+                float dist = distance1(vector[X(i)],vector[Y(i)],&centroid[X(k)]);
                 if (dist < lowest){
                     lowest = dist;
                     index_low = k;
@@ -73,17 +73,21 @@ int k_means(){
                 cluster[i]=index_low;
                 changed = 1;
             }
+            //sum[X(index_low)] += vector[X(i)]; 
+            //sum[Y(index_low)] += vector[Y(i)]; 
+            //tempSize[index_low]++;
+        }
+        for (int i = 0;i < N;i++){
+            int index_low = cluster[i];
             //sum values x,y for centroid calculation
             sum[X(index_low)] += vector[X(i)]; 
             sum[Y(index_low)] += vector[Y(i)]; 
             tempSize[index_low]++;
         }
-        //centroid calculation
-
         for (int i = 0; i < K; i++){
             size[i] = tempSize[i];
-            centroid[X(i)] = sum[X(i)]/size[i];
-            centroid[Y(i)] = sum[Y(i)]/size[i];
+            centroid[X(i)] = sum[X(i)]/tempSize[i];
+            centroid[Y(i)] = sum[Y(i)]/tempSize[i];
         }
        iterations++;
     }
