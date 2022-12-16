@@ -62,7 +62,7 @@ void showResult(int it){
     printf("Iterations: %d\n",it);
 }
 
-
+//Function to assign every point to a cluster
 void assignCluster(){
     #pragma omp parallel for num_threads(NumThreads)
     for (int i = 0; i < N ;i++){ 
@@ -96,7 +96,7 @@ void assignClusterCollapse(){
 }
 */
 
-
+//Function to calculate centroids
 void calculateCentroid(){
     int tempSize[K];
     float sumX[K];
@@ -105,6 +105,7 @@ void calculateCentroid(){
     memset( sumX, 0,K*sizeof(float) );
     memset( sumY, 0,K*sizeof(float) );
 
+    //Sum all values of x and y, and size of each cluster
     #pragma omp parallel for num_threads(NumThreads) reduction(+:sumX[:K],sumY[:K],tempSize[:K])
     for (int i = 0;i < N;i++){
         int index_low = cluster[i];
@@ -112,7 +113,7 @@ void calculateCentroid(){
         sumY[(index_low)] += vectorY[(i)]; 
         tempSize[index_low]++;
     }
-
+    //Calculate new values of each centroid
     #pragma omp parallel for num_threads(NumThreads)
     for (int i = 0; i < K; i++){
         size[i] = tempSize[i];

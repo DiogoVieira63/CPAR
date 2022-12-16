@@ -15,7 +15,6 @@ k_means: $(SRC)k_means.c
 clean: 
 	rm -r bin/*
 
-
 perfseq:
 	 perf stat -e instructions,cycles,L1-dcache-load-misses -r 5 $(BIN)$(EXEC) 10000000 $(CP_CLUSTERS)
 
