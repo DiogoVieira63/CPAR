@@ -12,7 +12,7 @@ using namespace std;
 #define X(i) (i * 2)
 #define Y(i) (i * 2 + 1)
 
-#define K 20
+#define K 4
 
 /*
 __global__
@@ -156,7 +156,7 @@ void launchStencilKernel(float *pointsX, float *pointsY, float *centroids)
 		cudaMemcpy(dSum, sum, bytesCentroids, cudaMemcpyHostToDevice);
 		kmeans<<<blocks, threads_block>>>(dX, dY, dC, dSize, dSum);
 
-		cudaMemcpy(centroids, dC, bytesCentroids, cudaMemcpyDeviceToHost);
+		//cudaMemcpy(centroids, dC, bytesCentroids, cudaMemcpyDeviceToHost);
 		cudaMemcpy(size, dSize, bytesInt, cudaMemcpyDeviceToHost);
 		cudaMemcpy(sum, dSum, bytesCentroids, cudaMemcpyDeviceToHost);
 
