@@ -19,22 +19,6 @@ float *pointsX, *pointsY, *centroids;
 int *cluster;
 
 
-/*
-__global__
-void stencilKernel (float *a, float *c) {
-	int id = blockIdx.x * blockDim.x + threadIdx.x;
-
-	// initialise the array with the results
-	c[id] = 0;
-
-	// iterate through the neighbours required to calculate
-	// the values for the current position of c
-	for (int n = id-2; n <= id+2; n++) {
-		if (n > 0 && n < 	) c[id]+= a[n];
-	}
-
-}
-*/
 
 // Function to calculate the euclidean distance
 __device__ float distance(float x, float y, float *cl)
@@ -42,52 +26,7 @@ __device__ float distance(float x, float y, float *cl)
 	return ((cl[0] - x) * (cl[0] - x) + (cl[1] - y) * (cl[1] - y));
 }
 
-/*
-__global__ void assignClusterKernel(int N, float *a, float *b, int *c)
-{
-	int i = blockIdx.x * blockDim.x + threadIdx.x;
-	if (i < N)
-	{
-		float lowest = distance(vectorX[(i)], vectorY[(i)], &centroid[X(0)]);
-		int index_low = 0;
-		for (int k = 1; k < K; k++)
-		{
-			float dist = distance(vectorX[(i)], vectorY[(i)], &centroid[X(k)]);
-			if (dist < lowest)
-			{
-				lowest = dist;
-				index_low = k;
-			}
-		}
-		cluster[i] = index_low;
-	}
-}
 
-__global__ void sumCentroidsKernel(int N, int *size, float *sumX, float *sumY, float *vectorX, float *vectorY)
-{
-	int i = blockIdx.x * blockDim.x + threadIdx.x;
-	if (i < N)
-	{
-		int index_low = cluster[i];
-		sumX += vectorX[(i)];
-		sumY += vectorY[(i)];
-		size[index_low] += 1;
-	}
-}
-
-__global__ void calculateCentroidsKernel(int N, int *size, float *sumX, float *sumY, float *vectorX, float *vectorY)
-{
-	int i = blockIdx.x * blockDim.x + threadIdx.x;
-	if (i < N)
-	{
-		int index_low = cluster[i];
-		sumX += vectorX[(i)];
-		sumY += vectorY[(i)];
-		size[index_low] += 1;
-	}
-}
-
-*/
 
 //__global__ void assignCluster(float *pointX, float *pointY, float *centroids, int *size, float* sum )
 
@@ -99,21 +38,12 @@ __global__ void kmeans(float *pointX, float *pointY, float *centroids,unsigned i
 	if (tid >= N)
 		return;
 	
-	//centroids to shared memory
-	__shared__ float sharedCentroids[K * 2];
-	if (threadIdx.x < K * 2)
-	{
-		sharedCentroids[threadIdx.x] = centroids[threadIdx.x];
-	}
-	__syncthreads();
-
-
 	// Calculate the distance between the point and each centroid
-	float min_distance = distance(pointX[tid], pointY[tid], &sharedCentroids[0]);
+	float min_distance = distance(pointX[tid], pointY[tid], &centroids[0]);
 	int min_index = 0;
 	for (int i = 1; i < K; i++)
 	{
-		float dist = distance(pointX[tid], pointY[tid], &sharedCentroids[2 * i]);
+		float dist = distance(pointX[tid], pointY[tid], &centroids[2 * i]);
 		if (dist < min_distance)
 		{
 			min_distance = dist;
@@ -138,8 +68,7 @@ __global__ void kmeans2(float *pointX, float *pointY, float *centroids,int *clus
 	
 	//centroids to shared memory
 	__shared__ float sharedCentroids[K * 2];
-	if (threadIdx.x < K * 2)
-	{
+	if (threadIdx.x < K * 2){
 		sharedCentroids[threadIdx.x] = centroids[threadIdx.x];
 	}
 	__syncthreads();
@@ -198,7 +127,6 @@ void launchStencilKernel()
 	dim3 threads_block(NUM_THREADS_PER_BLOCK);
 	int blocks_int = (N + NUM_THREADS_PER_BLOCK - 1) / NUM_THREADS_PER_BLOCK;
 	dim3 blocks(blocks_int);
-	printf("Launching with %d blocks of %d threads\n", blocks_int, NUM_THREADS_PER_BLOCK);
 	int size[K] = {0};
 	for (int i = 0; i <= 20; i++)
 	{
@@ -260,7 +188,6 @@ int main(int argc, char **argv)
 	clock_t start, end;
     start = clock();
     double time_used;
-	printf("Starting K-means\n");
 	// arrays on the host
 	
 	pointsX = (float *)malloc(N * sizeof(float));
@@ -270,7 +197,6 @@ int main(int argc, char **argv)
 
 	srand(10);
 
-	printf("Initialising arrays with random values between 0 and 1\n");
 	// initialises the array
 	for (int i = 0; i < N; ++i)
 	{
@@ -279,7 +205,6 @@ int main(int argc, char **argv)
 	}
 
 	// initialises the centroids
-	printf("Initialising centroids with vectors first K values\n");
 	for (int i = 0; i < K; ++i)
 	{
 		centroids[X(i)] = pointsX[i];
